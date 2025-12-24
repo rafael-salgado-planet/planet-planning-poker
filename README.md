@@ -1,5 +1,5 @@
 # planet-planning-poker
-A simple Blazor Server + SignalR Planning Poker app to run lightweight estimation sessions in real time.
+A simple Blazor Server + SignalR Planning Poker app to run lightweight estimation sessions without the limit of users per room!
 # RWS.PlanningPoker
 
 A lightweight **Planning Poker** app built with **.NET 10**, **Blazor Server**, and **SignalR** for real-time estimation sessions.
