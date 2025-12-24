@@ -29,7 +29,7 @@ public partial class Room : ComponentBase, IDisposable
     private BarChart? barChart;
     private bool chartsInitialized;
     private bool IsManager => string.Equals(userInfo.Username, room?.ManagerName, StringComparison.OrdinalIgnoreCase);
-    private readonly string[] votes = new[] { "1", "2", "3", "5", "8", "13", "21", "?" };
+    private readonly string[] votes = ["1", "2", "3", "5", "8", "13", "21", "?"];
 
     protected override async Task OnInitializedAsync()
     {
@@ -262,19 +262,6 @@ public partial class Room : ComponentBase, IDisposable
         }
     }
 
-    private Task PersistData()
-    {
-        try
-        {
-            ApplicationState.PersistAsJson("planningpoker_username", userInfo.Username);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Room.PersistData] Error: {ex.Message}");
-        }
-        return Task.CompletedTask;
-    }
-
     public void Dispose()
     {
         try
@@ -301,22 +288,6 @@ public partial class Room : ComponentBase, IDisposable
         catch (Exception ex)
         {
             Console.WriteLine($"[Room.Dispose] Error: {ex.Message}");
-        }
-    }
-
-    private async Task CloseModal()
-    {
-        try
-        {
-            showResultsModal = false;
-            chartsInitialized = false;
-            if (resultsModal != null)
-                await resultsModal.HideAsync();
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Room.CloseModal] Error: {ex.Message}");
         }
     }
 
@@ -388,15 +359,15 @@ public partial class Room : ComponentBase, IDisposable
             var pieChartData = new ChartData
             {
                 Labels = labels,
-                Datasets = new List<IChartDataset>
-                {
+                Datasets =
+                [
                     new PieChartDataset
                     {
                         Label = "Vote Distribution",
                         Data = data,
                         BackgroundColor = colors.Take(labels.Count).ToList()
                     }
-                }
+                ]
             };
 
             var pieOptions = new PieChartOptions
@@ -456,17 +427,5 @@ public partial class Room : ComponentBase, IDisposable
             Console.WriteLine($"[Room.UpdateCharts] Error initializing charts: {ex.Message}");
             chartsInitialized = false;
         }
-    }
-
-    public class RoomDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string ManagerName { get; set; } = string.Empty;
-        public bool IsVotingOpen { get; set; }
-        public List<string> Participants { get; set; } = [];
-        public Dictionary<string, string> Votes { get; set; } = [];
-        public double? Average { get; set; }
-        public Dictionary<string, int> Tally { get; set; } = [];
     }
 }
