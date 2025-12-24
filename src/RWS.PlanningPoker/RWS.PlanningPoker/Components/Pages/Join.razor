@@ -1,0 +1,89 @@
+@page "/join/{RoomId:guid}"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Join Room</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <Card>
+                <CardBody>
+                    <CardTitle>
+                        <Icon Name="IconName.Valentine2" class="me-2" />
+                        @if (roomNotFound)
+                        {
+                            <span>Room not found</span>
+                        }
+                        else
+                        {
+                            <span>Join Room @(!string.IsNullOrEmpty(roomName) ? $"- {roomName}" : string.Empty)</span>
+                        }
+                    </CardTitle>
+
+                    @if (roomNotFound)
+                    {
+                        <Alert Color="AlertColor.Danger">
+                            <Icon Name="IconName.ExclamationTriangle" class="me-2" />
+                            This room doesn't exist or has been deleted.
+                        </Alert>
+                    }
+                    else
+                    {
+                        <form method="post" action="api/rooms/joinform">
+                            <input type="hidden" name="roomId" value="@RoomId" />
+                            <div class="mb-3">
+                                <label for="yourName" class="form-label">Your name</label>
+                                <input type="text" name="yourName" id="yourName" class="form-control" placeholder="John Doe" required value="@yourName" />
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <Icon Name="IconName.BoxArrowInRight" class="me-2" />
+                                <span>Enter Room</span>
+                            </button>
+                        </form>
+                    }
+                </CardBody>
+            </Card>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject] private HttpClient Http { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+    [Inject] private IUserService UserService { get; set; } = default!;
+
+    [Parameter] public Guid RoomId { get; set; }
+    private string roomName = string.Empty;
+    private bool roomNotFound;
+    private string yourName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var info = UserService.GetCurrentUserInfo();
+        yourName = info.Username ?? string.Empty;
+
+        try
+        {
+            var dto = await Http.GetFromJsonAsync<RoomDto>($"/api/rooms/{RoomId}");
+            if (dto != null)
+            {
+                roomName = dto.Name;
+            }
+            else
+            {
+                roomNotFound = true;
+            }
+        }
+        catch
+        {
+            roomNotFound = true;
+        }
+    }
+
+    public class RoomDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+}

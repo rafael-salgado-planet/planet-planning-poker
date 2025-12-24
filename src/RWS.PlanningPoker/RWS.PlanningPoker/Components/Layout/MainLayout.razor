@@ -1,0 +1,102 @@
+﻿@inherits LayoutComponentBase
+
+<ErrorBoundary>
+    <ChildContent>
+        <div class="page">
+            <main>
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
+        </div>
+    </ChildContent>
+    <ErrorContent Context="exception">
+        <div class="error-boundary">
+            <h3>An error occurred</h3>
+            <p>Please refresh the page to continue.</p>
+            <button class="btn btn-primary" onclick="location.reload()">Refresh Page</button>
+            
+            <details class="mt-4">
+                <summary class="text-muted">Error Details</summary>
+                <div class="error-details mt-3 p-3 bg-light rounded">
+                    <h6 class="text-danger">Exception Type:</h6>
+                    <code class="text-muted">@exception.GetType().FullName</code>
+                    
+                    <h6 class="text-danger mt-3">Message:</h6>
+                    <code class="text-muted">@exception.Message</code>
+                    
+                    <h6 class="text-danger mt-3">Stack Trace:</h6>
+                    <pre class="text-muted small">@exception.StackTrace</pre>
+                    
+                    @if (exception.InnerException != null)
+                    {
+                        <h6 class="text-danger mt-3">Inner Exception:</h6>
+                        <code class="text-muted">@exception.InnerException.Message</code>
+                        
+                        <h6 class="text-danger mt-3">Inner Exception Stack Trace:</h6>
+                        <pre class="text-muted small">@exception.InnerException.StackTrace</pre>
+                    }
+                </div>
+            </details>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+<div id="blazor-error-ui" data-nosnippet style="display: none;">
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+<style>
+    .error-boundary {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 50vh;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .error-boundary h3 {
+        color: #dc3545;
+        margin-bottom: 1rem;
+    }
+
+    .error-boundary p {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+
+    .error-details {
+        border: 1px solid #dee2e6;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .error-details h6 {
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
+
+    .error-details code {
+        display: block;
+        padding: 0.5rem;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 0.25rem;
+        word-wrap: break-word;
+    }
+
+    .error-details pre {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>

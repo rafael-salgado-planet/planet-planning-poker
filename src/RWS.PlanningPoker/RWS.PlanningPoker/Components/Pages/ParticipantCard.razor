@@ -1,0 +1,71 @@
+@using RWS.PlanningPoker.Components.Pages
+
+<div class="participant-wrapper">
+    <div class="participant-card-small @(IsCurrentUser ? "participant-card-current" : string.Empty)">
+        <div class="card h-100" style="background-color: white;">
+            <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center position-relative">
+                @if (!HasVoted)
+                {
+                    <Icon Name="IconName.Person" Size="IconSize.x3" />
+                }
+                else if (Room == null)
+                {
+                    <Icon Name="IconName.QuestionCircle" Size="IconSize.x3" />
+                }
+                else if (!Room.IsVotingOpen)
+                {
+                    <div class="vote-value-large">@DisplayVote</div>
+                }
+                else if (IsCurrentUser)
+                {
+                    <div class="vote-value-large">@DisplayVote</div>
+                }
+                else
+                {
+                    <Icon Name="IconName.CheckCircleFill" Size="IconSize.x3" Color="IconColor.Success" />
+                }
+            </div>
+        </div>
+    </div>
+    <div class="player-name text-center mt-2">
+        @if (IsManager)
+        {
+            <Badge Color="BadgeColor.Primary" Class="ms-1">@Participant</Badge>
+        }
+        else if (!IsCurrentUser)
+        {
+            <Badge Color="BadgeColor.Secondary" Class="ms-1">@Participant</Badge>
+        }
+        else
+        {
+            <Badge Color="BadgeColor.Info" Class="ms-1">@Participant</Badge>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Participant { get; set; } = string.Empty;
+
+    [Parameter]
+    public Room.RoomDto? Room { get; set; }
+
+    [Parameter]
+    public string CurrentUserName { get; set; } = string.Empty;
+
+    private bool IsCurrentUser => string.Equals(Participant, CurrentUserName, StringComparison.OrdinalIgnoreCase);
+    private bool IsManager => string.Equals(Participant, Room?.ManagerName, StringComparison.OrdinalIgnoreCase);
+    private bool HasVoted => Room?.Votes.ContainsKey(Participant) ?? false;
+
+    private string DisplayVote
+    {
+        get
+        {
+            if (Room?.Votes.TryGetValue(Participant, out var vote) == true && !string.IsNullOrWhiteSpace(vote))
+            {
+                return vote;
+            }
+            return "?";
+        }
+    }
+}

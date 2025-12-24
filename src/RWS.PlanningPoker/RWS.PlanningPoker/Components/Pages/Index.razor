@@ -1,0 +1,68 @@
+@page "/"
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Planet Poker</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <Card>
+                <CardBody>
+                    <CardTitle>
+                        <Icon Name="IconName.Valentine2" class="me-2" />
+                        Create Planet Planning Poker Room
+                    </CardTitle>
+                    
+                    <form method="post" action="api/rooms/createform">
+                        <div class="mb-3">
+                            <label for="roomName" class="form-label">Room name</label>
+                            <input type="text" name="roomName" id="roomName" class="form-control" placeholder="Sprint Planning" required value="@model.RoomName" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="yourName" class="form-label">Your name</label>
+                            <input type="text" name="yourName" id="yourName" class="form-control" placeholder="John Doe" required value="@model.YourName" />
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            <span>Create Room</span>
+                        </button>
+                    </form>
+                    
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <Alert Color="AlertColor.Danger" Class="mt-3">
+                            <Icon Name="IconName.ExclamationTriangle" class="me-2" />
+                            @errorMessage
+                        </Alert>
+                    }
+                </CardBody>
+            </Card>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject] private IUserService UserService { get; set; } = default!;
+
+    private CreateModel model = new();
+    private string? errorMessage;
+
+    protected override void OnInitialized()
+    {
+        // Get current user from UserService
+        var info = UserService.GetCurrentUserInfo();
+        if (!string.IsNullOrEmpty(info.Username))
+        {
+            model.YourName = info.Username;
+        }
+    }
+
+    private class CreateModel
+    {
+        public string RoomName { get; set; } = string.Empty;
+        public string YourName { get; set; } = string.Empty;
+    }
+}
