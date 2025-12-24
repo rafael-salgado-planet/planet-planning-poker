@@ -4,6 +4,8 @@ A simple Blazor Server + SignalR Planning Poker app to run lightweight estimatio
 
 A lightweight **Planning Poker** app built with **.NET 10**, **Blazor Server**, and **SignalR** for real-time estimation sessions.
 
+MS Copilot-oriented development
+
 ## Features
 
 - Create a room and share the URL
