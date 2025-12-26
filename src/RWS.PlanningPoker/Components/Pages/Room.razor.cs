@@ -16,7 +16,7 @@ public partial class Room : ComponentBase, IDisposable
 
     [Parameter] public Guid RoomId { get; set; }
     private RoomDto? room;
-    private UserCookieRecord userInfo;
+    private UserCookieRecord? userInfo;
 
     private HubConnection? hubConnection;
 
@@ -74,7 +74,7 @@ public partial class Room : ComponentBase, IDisposable
                 });
             });
 
-            hubConnection.On("Update", async () =>
+            hubConnection.On("Update", async() =>
             {
                 if (_disposed || hubConnection?.State != HubConnectionState.Connected) return;
 
