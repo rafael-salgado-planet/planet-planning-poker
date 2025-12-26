@@ -22,7 +22,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddSingleton<RoomStore>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<HttpClient>(sp => {
+builder.Services.AddScoped(sp => {
     var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
     var httpContext = httpContextAccessor.HttpContext;
     if (httpContext != null) {
@@ -36,7 +36,6 @@ builder.Services.AddScoped<HttpClient>(sp => {
     Console.WriteLine("[HttpClient] HttpContext is null, using default HttpClient");
     return new HttpClient();
 });
-builder.Services.AddSingleton<ApplicationState>(sp => new ApplicationState(sp.GetRequiredService<IHostApplicationLifetime>()));
 builder.Services.AddScoped<StateContainer>();
 var app = builder.Build();
 
