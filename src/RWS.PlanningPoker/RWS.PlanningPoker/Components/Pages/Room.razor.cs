@@ -12,7 +12,6 @@ public partial class Room : ComponentBase, IDisposable
     [Inject] private NavigationManager Nav { get; set; } = default!;
     [Inject] private IUserService UserService { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
-    [Inject] private ApplicationState ApplicationState { get; set; } = default!;
     [Inject] private StateContainer StateContainer { get; set; } = default!;
 
     [Parameter] public Guid RoomId { get; set; }
