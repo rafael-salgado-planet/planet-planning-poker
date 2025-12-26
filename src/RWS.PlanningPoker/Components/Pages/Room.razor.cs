@@ -16,7 +16,7 @@ public partial class Room : ComponentBase, IDisposable
 
     [Parameter] public Guid RoomId { get; set; }
     private RoomDto? room;
-    private UserCookieRecord userInfo;
+    private UserCookieRecord? userInfo;
 
     private HubConnection? hubConnection;
 
@@ -36,22 +36,26 @@ public partial class Room : ComponentBase, IDisposable
         {
             StateContainer.OnChange += StateHasChanged;
 
-            userInfo = UserService.GetCurrentUserInfo();
-
-            Console.WriteLine($"[Room.OnInitializedAsync] Current user: '{userInfo.Username}', RoomId: {RoomId}");
-
-            // If no username cookie, redirect to join page to capture name
-            if (string.IsNullOrWhiteSpace(userInfo.Username))
-            {
-                Navigation.NavigateTo($"/join/{RoomId}", true);
-                return;
-            }
-
+            // Read any joinError from the current URL before any redirects
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var query = QueryHelpers.ParseQuery(uri.Query);
             if (query.TryGetValue("joinError", out var errorValue))
             {
                 joinErrorMessage = errorValue.FirstOrDefault();
+            }
+
+            userInfo = UserService.GetCurrentUserInfo();
+
+            Console.WriteLine($"[Room.OnInitializedAsync] Current user: '{userInfo.Username}', RoomId: {RoomId}");
+
+            // If no username cookie, redirect to join page (preserve joinError if present)
+            if (string.IsNullOrWhiteSpace(userInfo.Username))
+            {
+                var joinUrl = string.IsNullOrWhiteSpace(joinErrorMessage)
+                    ? $"{Navigation.BaseUri}join/{RoomId}"
+                    : $"{Navigation.BaseUri}join/{RoomId}?joinError={Uri.EscapeDataString(joinErrorMessage)}";
+                Navigation.NavigateTo(joinUrl, true);
+                return;
             }
 
             var hubUrl = Navigation.ToAbsoluteUri("roomhub");
@@ -66,11 +70,11 @@ public partial class Room : ComponentBase, IDisposable
                 await InvokeAsync(() =>
                 {
                     joinErrorMessage = message;
-                    Navigation.NavigateTo($"/join/{RoomId}?joinError={Uri.EscapeDataString(message)}", true);
+                    Navigation.NavigateTo($"{Navigation.BaseUri}join/{RoomId}?joinError={Uri.EscapeDataString(message)}", true);
                 });
             });
 
-            hubConnection.On("Update", async () =>
+            hubConnection.On("Update", async() =>
             {
                 if (_disposed || hubConnection?.State != HubConnectionState.Connected) return;
 

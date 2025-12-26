@@ -39,7 +39,7 @@
                     }
                     else
                     {
-                        <form method="post" action="api/rooms/enterroom">
+                        <form method="post" action="@Nav.ToAbsoluteUri("api/rooms/enterroom")">
                             <input type="hidden" name="roomId" value="@RoomId" />
                             <div class="mb-3">
                                 <label for="yourName" class="form-label">Your name</label>
@@ -83,7 +83,7 @@
 
         try
         {
-            var dto = await Http.GetFromJsonAsync<RoomDto>($"/api/rooms/{RoomId}");
+            var dto = await Http.GetFromJsonAsync<RoomDto>($"api/rooms/{RoomId}");
             if (dto != null)
             {
                 roomName = dto.Name;
