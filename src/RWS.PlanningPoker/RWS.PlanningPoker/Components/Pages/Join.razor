@@ -1,6 +1,8 @@
 @page "/join/{RoomId:guid}"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
+@using Microsoft.AspNetCore.WebUtilities
+
 <PageTitle>Join Room</PageTitle>
 
 <div class="container mt-5">
@@ -19,6 +21,14 @@
                             <span>Join Room @(!string.IsNullOrEmpty(roomName) ? $"- {roomName}" : string.Empty)</span>
                         }
                     </CardTitle>
+
+                    @if (!string.IsNullOrWhiteSpace(joinErrorMessage))
+                    {
+                        <Alert Color="AlertColor.Danger" Class="mb-3">
+                            <Icon Name="IconName.ExclamationTriangle" class="me-2" />
+                            @joinErrorMessage
+                        </Alert>
+                    }
 
                     @if (roomNotFound)
                     {
@@ -57,9 +67,17 @@
     private string roomName = string.Empty;
     private bool roomNotFound;
     private string yourName = string.Empty;
+    private string? joinErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+        if (query.TryGetValue("joinError", out var errorValue))
+        {
+            joinErrorMessage = errorValue.FirstOrDefault();
+        }
+
         var info = UserService.GetCurrentUserInfo();
         yourName = info.Username ?? string.Empty;
 

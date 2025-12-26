@@ -16,9 +16,6 @@ public class RoomHub : Hub
         _store = store;
         _userService = userService;
     }
-
-    private UserCookieRecord GetIdentity() => _userService.GetCurrentUserInfo();
-
     public async Task JoinRoom(Guid roomId, UserCookieRecord userInfo)
     {
         var room = _store.Get(roomId);
@@ -29,8 +26,6 @@ public class RoomHub : Hub
             await Clients.Caller.SendAsync("JoinRejected", "Name is required.");
             return;
         }
-
-      
 
         // If name already in room with different id, reject so UI can redirect to join
         if (room.UserIds.TryGetValue(userInfo.Username, out var existingId) && !string.Equals(existingId, userInfo.Id, StringComparison.Ordinal))

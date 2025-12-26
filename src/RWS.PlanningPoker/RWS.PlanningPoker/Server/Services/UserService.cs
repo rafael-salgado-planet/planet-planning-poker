@@ -16,6 +16,9 @@ public class UserService : IUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private const string CookieName = "planningpoker_UserIdentity";
+
+    // Per-request cache key so SetCurrentUser + GetCurrentUserInfo within the same request is consistent.
+    private const string ItemsKey = "__planningpoker_user";
  
     private record UserCookie(string Username, string Id);
 
@@ -28,6 +31,12 @@ public class UserService : IUserService
     {
         var httpContext = _httpContextAccessor.HttpContext;
         if (httpContext == null) return new UserCookieRecord(null, null);
+
+        // If SetCurrentUser was called earlier in the same request, prefer the cached value.
+        if (httpContext.Items.TryGetValue(ItemsKey, out var cached) && cached is UserCookieRecord rec)
+        {
+            return rec;
+        }
 
         var raw = httpContext.Request.Cookies[CookieName];
         if (string.IsNullOrWhiteSpace(raw)) return new UserCookieRecord(null, null);
@@ -73,6 +82,10 @@ public class UserService : IUserService
             }
         }
 
+        // Cache for this request so subsequent GetCurrentUserInfo() returns the same user/id
+        // even though the cookie won't appear in Request.Cookies until the next request.
+        httpContext.Items[ItemsKey] = new UserCookieRecord(payload.Username, payload.Id);
+
         var json = JsonSerializer.Serialize(payload);
         var encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
 
@@ -98,6 +111,9 @@ public class UserService : IUserService
     {
         var httpContext = _httpContextAccessor.HttpContext;
         if (httpContext == null) return;
+
+        // Clear per-request cache
+        httpContext.Items.Remove(ItemsKey);
 
         try
         {
