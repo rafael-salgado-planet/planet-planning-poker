@@ -29,7 +29,7 @@ MS Copilot-oriented development
 ## Run locally
 
 ```bash
-dotnet run --project src/RWS.PlanningPoker/RWS.PlanningPoker/RWS.PlanningPoker.csproj
+dotnet run --project src/RWS.PlanningPoker/RWS.PlanningPoker.csproj
 ```
 
 Then open the printed URL.
