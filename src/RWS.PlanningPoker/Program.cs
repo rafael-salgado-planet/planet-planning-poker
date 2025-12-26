@@ -40,6 +40,13 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<StateContainer>();
 var app = builder.Build();
 
+// Configure base path for IIS virtual directory if present
+var basePath = builder.Configuration["BasePath"];
+if (!string.IsNullOrWhiteSpace(basePath))
+{
+    app.UsePathBase(basePath);
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -62,12 +69,5 @@ app.MapRazorComponents<App>()
 
 app.MapControllers(); // Added to map API controllers
 app.MapHub<RoomHub>("/roomhub");
-
-// Configure base path for IIS virtual directory if present
-var basePath = builder.Configuration["BasePath"];
-if (!string.IsNullOrWhiteSpace(basePath))
-{
-    app.UsePathBase(basePath);
-}
 
 app.Run();
