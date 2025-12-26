@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/Presentation/">
-    <Project Path="src/RWS.PlanningPoker/RWS.PlanningPoker.Client/RWS.PlanningPoker.Client.csproj" />
-    <Project Path="src/RWS.PlanningPoker/RWS.PlanningPoker/RWS.PlanningPoker.csproj" />
+    <Project Path="src/RWS.PlanningPoker.Client/RWS.PlanningPoker.Client.csproj" />
+    <Project Path="src/RWS.PlanningPoker/RWS.PlanningPoker.csproj" />
   </Folder>
 </Solution>

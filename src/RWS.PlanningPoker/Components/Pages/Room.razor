@@ -1,0 +1,232 @@
+@page "/room/{RoomId:guid}"
+@layout RoomLayout
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@implements IDisposable
+
+<PageTitle>Room</PageTitle>
+
+@if (string.IsNullOrWhiteSpace(userInfo.Username))
+{
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <Card Style="max-width: 400px; width: 100%;">
+            <CardBody>
+                <CardTitle Class="text-center mb-4">
+                    <Icon Name="IconName.PersonCircle" Size="IconSize.x2" class="me-2" />
+                    Enter Your Name
+                </CardTitle>
+                @if (!string.IsNullOrWhiteSpace(joinErrorMessage))
+                {
+                    <Alert Color="AlertColor.Danger" Class="mb-3">
+                        @joinErrorMessage
+                    </Alert>
+                }
+                <form method="post" action="api/rooms/enterroom">
+                    <input type="hidden" name="roomId" value="@RoomId" />
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Your name</label>
+                        <input type="text" name="name" class="form-control" required placeholder="John Doe" />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <Icon Name="IconName.BoxArrowInRight" class="me-2" />
+                        Enter Room
+                    </button>
+                </form>
+            </CardBody>
+        </Card>
+    </div>
+}
+else if (room == null)
+{
+    <div class="text-center mt-5">
+        <Alert Color="AlertColor.Warning" Class="d-inline-block">
+            <Icon Name="IconName.ExclamationTriangle" Size="IconSize.x2" class="mb-2" />
+            <h5 class="alert-heading">Room Not Found</h5>
+            <p class="mb-2">This room doesn't exist or has been deleted.</p>
+            <hr>
+            <Button Color="ButtonColor.Primary" To="/">
+                <Icon Name="IconName.PlusCircle" class="me-2" />
+                Create a New Room
+            </Button>
+        </Alert>
+    </div>
+}
+else
+{
+    <div class="container-fluid px-2 py-2 @(room.IsVotingOpen ? "has-voting-buttons" : "")">
+        <!-- Room Header -->
+        <div class="row mb-3 align-items-center">
+            <div class="col-auto">
+                <h4 class="mb-0 fw-bold" style="color: #495057;">
+                    <Icon Name="IconName.Valentine2" class="me-2" />
+                    PlanetPoker
+                </h4>
+            </div>
+            <div class="col">
+            </div>
+            <div class="col-auto text-end">
+                <h5 class="mb-0 fw-bold" style="color: #495057;">
+                    <Icon Name="IconName.DoorOpen" class="me-2" />
+                    Room: @room.Name
+                </h5>
+            </div>
+        </div>
+
+        <!-- Main Layout: Cards Around Center Panel -->
+        <div class="room-layout">
+            @{
+                var orderedParticipants = room.Participants.OrderBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
+                var othersOrdered = orderedParticipants.Where(p => !string.Equals(p, userInfo.Username, StringComparison.OrdinalIgnoreCase)).ToList();
+                var topParticipants = othersOrdered.Take(Math.Min(5, othersOrdered.Count)).ToList();
+                var leftParticipants = othersOrdered.Skip(5).Take(3).ToList();
+                var rightParticipants = othersOrdered.Skip(8).Take(3).ToList();
+                var bottomParticipants = othersOrdered.Skip(11).Take(5).ToList();
+            }
+
+            <!-- Top Cards -->
+            <div class="cards-row cards-top">
+                @foreach (var p in topParticipants)
+                {
+                    <ParticipantCard Participant="@p" Room="room" CurrentUserName="@userInfo.Username" />
+                }
+            </div>
+
+            <!-- Middle Section: Left Cards + Center Panel + Right Cards -->
+            <div class="middle-section">
+                <!-- Left Cards -->
+                <div class="cards-column cards-left">
+                    @foreach (var p in leftParticipants)
+                    {
+                        <ParticipantCard Participant="@p" Room="room" CurrentUserName="@userInfo.Username" />
+                    }
+                </div>
+
+                <!-- Center Control Panel -->
+                <div class="center-panel">
+                    <Card Class="control-card">
+                        <CardBody Class="text-center p-4">
+                            
+                                <!-- Manager: Toggle Button -->
+                                @if (room.IsVotingOpen)
+                                {
+                                    <div class="mb-3">
+                                        <Icon Name="IconName.NintendoSwitch" Size="IconSize.x2" Class="status-icon voting-active mb-3 text-secondary" />
+
+                                    @if (IsManager)
+                                    {
+                                        <Button Color="ButtonColor.Warning" Size="ButtonSize.Small" @onclick="FinishVoting">
+                                            <Icon Name="IconName.StopCircle" class="me-2" />
+                                            Finish Voting
+                                        </Button>  
+                                    }
+                                    </div>
+                                      <Badge Color="BadgeColor.Warning">Vote!</Badge>
+                                }
+                                else
+                                {
+                                    <div class="mb-3">
+                                        <Icon Name="IconName.PauseFill" Size="IconSize.x2" Class="status-icon voting-idle mb-3 text-secondary" />
+                                    @if (IsManager)
+                                    {
+                                        <Button Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="StartVoting">
+                                            <Icon Name="IconName.PlayCircle" class="me-2" />
+                                            Start Voting
+                                        </Button>
+                                    }
+                                    </div>
+                                    <Badge Color="BadgeColor.Dark">Be Ready!</Badge>
+                                }
+                            
+                        </CardBody>
+                    </Card>
+
+                    @if (!string.IsNullOrWhiteSpace(userInfo.Username) && room.Participants.Contains(userInfo.Username))
+                    {
+                        <div class="current-user-slot">
+                            <ParticipantCard Participant="@userInfo.Username" Room="room" CurrentUserName="@userInfo.Username" />
+                        </div>
+                    }
+                </div>
+
+                <!-- Right Cards -->
+                <div class="cards-column cards-right">
+                    @foreach (var p in rightParticipants)
+                    {
+                        <ParticipantCard Participant="@p" Room="room" CurrentUserName="@userInfo.Username" />
+                    }
+                </div>
+            </div>
+
+            <!-- Bottom Cards -->
+            <div class="cards-row cards-bottom">
+                @foreach (var p in bottomParticipants)
+                {
+                    <ParticipantCard Participant="@p" Room="room" CurrentUserName="@userInfo.Username" />
+                }
+            </div>
+        </div>
+
+        <!-- Voting Buttons -->
+        @if (room.IsVotingOpen)
+        {
+            <div class="voting-buttons-fixed">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col text-center">
+                            <div class="d-flex flex-wrap justify-content-center gap-1">
+                                @foreach (var v in votes)
+                                {
+                                    <Button Color="ButtonColor.Primary" Outline="true" Size="ButtonSize.Large" Class="vote-btn" @onclick="(() => CastVote(v))">
+                                        @v
+                                    </Button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Results Modal -->
+        <Modal @ref="resultsModal" Size="ModalSize.Large" IsVerticallyCentered="true">
+            <BodyTemplate>
+                <div class="modal-body">
+                    <!-- Average Display -->
+                    <div class="text-center mb-4">
+                        <h6 class="text-muted mb-2">Average</h6>
+                        <div class="display-4 text-primary">
+                            @(room?.Average?.ToString("0.##") ?? "-")
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Pie Chart -->
+                        <div class="col-12 col-md-6">
+                            <div class="chart-container" style="height: 250px;">
+                                <h6 class="text-center mb-2">Vote Distribution</h6>
+                                <PieChart @ref="pieChart" Width="200" Height="200" />
+                            </div>
+                        </div>
+
+                        <!-- Bar Chart -->
+                        <div class="col-12 col-md-6">
+                            <div class="chart-container" style="height: 250px;">
+                                <h6 class="text-center mb-2">Vote Counts</h6>
+                                <BarChart @ref="barChart" Width="200" Height="200" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </BodyTemplate>
+        </Modal>
+
+        <!-- Join Error Message -->
+        @if (!string.IsNullOrWhiteSpace(joinErrorMessage))
+        {
+            <div class="alert alert-danger text-center mt-4">
+                <Icon Name="IconName.XCircle" class="me-2" />
+                @joinErrorMessage
+            </div>
+        }
+    </div>
+}
