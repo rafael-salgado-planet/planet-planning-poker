@@ -35,7 +35,7 @@ dotnet run --project src/RWS.PlanningPoker/RWS.PlanningPoker.csproj
 Then open the printed URL.
 
 ## Notes
-
+- Closing the browser in Mozilla Firefox does not trigger the leaving run feature. (We accept pull requests)
 - Room data is currently stored in-memory (no database). Restarting the app clears rooms.
 - Identity is stored in an HttpOnly cookie: `planningpoker_UserIdentity`.
 - IIS deployment: create a non-managed AppPool, enable the WebSocket protocol in the Windows features, install the ASP.NET hosting bundle, and URL rewrite 2.0. 
